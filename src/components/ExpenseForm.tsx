@@ -1,4 +1,17 @@
-const ExpenseForm = () => {
+import React from "react";
+
+// interface IExpenseFormState {
+// 	amount: string;
+// }
+
+const ExpenseForm: React.FC = () => {
+	const numberButtons: number[] = [20, 25, 50, 75, 100, 150, 200, 250, 300];
+
+	const [amount, setAmount] = React.useState<string>("");
+	const handleAmountClick = (number: number): void => {
+		setAmount(String(number));
+	};
+
 	return (
 		<>
 			<div className="container_money_track p-4  w-full h-300px bg-[rgb(1,2,11)] rounded-xl display-block border border-gray-600 ">
@@ -7,6 +20,8 @@ const ExpenseForm = () => {
 						<input
 							className="w-full h-10 p-4  border rounded-xl bg-[rgb(21,26,41)] border-gray-600 text-white"
 							placeholder="0.00"
+							value={amount}
+							onChange={e => setAmount(e.target.value)}
 						/>
 						<button className="h-10 w-30 rounded-xl bg-[rgb(21,26,41)] border border-gray-600">
 							L
@@ -23,33 +38,15 @@ const ExpenseForm = () => {
 					</div>
 
 					<div className="grid grid-cols-3 gap-2  p-0 rounded-xl  ">
-						<button className="h-10 rounded-xl bg-[rgb(21,26,41)] border border-gray-600">
-							20
-						</button>
-						<button className="h-10 rounded-xl bg-[rgb(21,26,41)] border border-gray-600">
-							25
-						</button>
-						<button className="h-10 rounded-xl bg-[rgb(21,26,41)] border border-gray-600">
-							50
-						</button>
-						<button className="h-10 rounded-xl bg-[rgb(21,26,41)] border border-gray-600">
-							75
-						</button>
-						<button className="h-10 rounded-xl bg-[rgb(21,26,41)] border border-gray-600">
-							100
-						</button>
-						<button className="h-10 rounded-xl bg-[rgb(21,26,41)] border border-gray-600">
-							150
-						</button>
-						<button className="h-10 rounded-xl bg-[rgb(21,26,41)] border border-gray-600">
-							200
-						</button>
-						<button className="h-10 rounded-xl bg-[rgb(21,26,41)] border border-gray-600">
-							250
-						</button>
-						<button className="h-10 rounded-xl  bg-[rgb(21,26,41)] border border-gray-600">
-							300
-						</button>
+						{numberButtons.map(number => (
+							<button
+								key={number}
+								className="h-10 rounded-xl bg-[rgb(21,26,41)] border border-gray-600"
+								onClick={() => handleAmountClick(number)}
+							>
+								{number}
+							</button>
+						))}
 					</div>
 
 					<div className="	flex flex-col gap-4 mt-4">

@@ -1,6 +1,6 @@
 import React from 'react'
 
-const NotionOfDate = () => {
+const TransactionList = () => {
 	return (
 		<div className="  w-full h-auto bg-[rgb(19,22,32)] rounded-xl display-block border border-gray-600 ">
       <section className="h-auto w-auto p-6 mb-6">
@@ -14,4 +14,4 @@ const NotionOfDate = () => {
 	)
 }
 
-export default NotionOfDate
+export default TransactionList
