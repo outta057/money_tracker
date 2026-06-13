@@ -1,15 +1,71 @@
 import React from "react";
+import type { Expense } from "../types/expense";
 
 // interface IExpenseFormState {
 // 	amount: string;
 // }
+// interface Expense {
+// 	amount: number;
+// 	currency: string;
+// 	category: string;
+// 	description: string;
+// }
 
-const ExpenseForm: React.FC = () => {
+type Props = {
+	onAddExpense: (expense: Expense) => void;
+};
+
+
+
+const ExpenseForm: React.FC<Props> = ({ onAddExpense }) => {
 	const numberButtons: number[] = [20, 25, 50, 75, 100, 150, 200, 250, 300];
+
+	const currencyOptions: string[] = ["L", "$", "€"];
+
+	const [currency, setCurrency] = React.useState<string>("");
+	const handleCurrencyClick = (currency: string): void => {
+		setCurrency(currency);
+	};
 
 	const [amount, setAmount] = React.useState<string>("");
 	const handleAmountClick = (number: number): void => {
 		setAmount(String(number));
+	};
+
+	const [category, setCategory] = React.useState<string>("Без категории");
+
+	const [description, setDescription] = React.useState<string>("");
+
+	// const [expenses, setExpenses] = React.useState<Expense[]>([]);
+
+	const [error, setError] = React.useState<string>("");
+
+	const handleAddExpense = (): void => {
+		if (!amount) {
+			setError("Введите сумму");
+			return;
+		}
+
+		if (!currency) {
+			setError("Выберите валюту");
+			return;
+		}
+
+		setError("");
+
+		const expense: Expense = {
+			amount: Number(amount),
+			currency,
+			category,
+			description,
+			
+		};
+		onAddExpense(expense);
+
+		setAmount("");
+		setCategory("Без категории");
+		setDescription("");
+		setCurrency("");
 	};
 
 	return (
@@ -17,22 +73,43 @@ const ExpenseForm: React.FC = () => {
 			<div className="container_money_track p-4  w-full h-300px bg-[rgb(1,2,11)] rounded-xl display-block border border-gray-600 ">
 				<section className="money_track">
 					<div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
-						<input
-							className="w-full h-10 p-4  border rounded-xl bg-[rgb(21,26,41)] border-gray-600 text-white"
-							placeholder="0.00"
-							value={amount}
-							onChange={e => setAmount(e.target.value)}
-						/>
-						<button className="h-10 w-30 rounded-xl bg-[rgb(21,26,41)] border border-gray-600">
-							L
-						</button>
-						<button className="h-10 w-30 rounded-xl bg-[rgb(21,26,41)] border border-gray-600">
-							$
-						</button>
-						<button className="h-10 w-30 rounded-xl bg-[rgb(21,26,41)] border border-gray-600">
-							€
-						</button>
-						<button className="h-10 w-30  rounded-xl text-white bg-[rgb(28,41,87)] border border-gray-600">
+						<div className="relative w-full">
+							<span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+								{currency || ""}
+							</span>
+
+							<input
+								className="w-full h-10 pl-10 pr-4 border rounded-xl bg-[rgb(21,26,41)] border-gray-600 text-white"
+								placeholder="0.00"
+								value={amount}
+								onChange={e => setAmount(e.target.value)}
+							/>
+						</div>
+
+						{currencyOptions.map(currencyOption => {
+							const isActive = currency === currencyOption;
+
+							return (
+								<button
+									key={currencyOption}
+									onClick={() => handleCurrencyClick(currencyOption)}
+									className={`h-10 w-30 rounded-xl border ${
+										isActive
+											? "bg-[rgb(28,41,87)] border-blue-500 text-white"
+											: "bg-[rgb(21,26,41)] border-gray-600 text-gray-400"
+									}`}
+								>
+									{currencyOption}
+								</button>
+							);
+						})}
+
+						{error && <p className="text-red-500 text-sm">{error}</p>}
+
+						<button
+							onClick={handleAddExpense}
+							className="h-10 w-30  rounded-xl text-white bg-[rgb(28,41,87)] border border-gray-600"
+						>
 							+
 						</button>
 					</div>
@@ -54,6 +131,8 @@ const ExpenseForm: React.FC = () => {
 							Категории
 							<select
 								aria-label="Категории расходов"
+								value={category}
+								onChange={e => setCategory(e.target.value)}
 								className="text-white p-2 rounded-xl bg-[rgb(21,26,41)] border border-gray-600"
 							>
 								<option value="Без категории">Без категории</option>
@@ -74,6 +153,8 @@ const ExpenseForm: React.FC = () => {
 								type="text"
 								placeholder="Необязательно"
 								maxLength={100}
+								value={description}
+								onChange={e => setDescription(e.target.value)}
 								className="text-white p-2 rounded-xl bg-[rgb(21,26,41)] border border-gray-600"
 							/>
 						</label>
