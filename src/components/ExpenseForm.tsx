@@ -1,23 +1,20 @@
 import React from "react";
 import type { Expense } from "../types/expense";
-
-// interface IExpenseFormState {
-// 	amount: string;
-// }
-// interface Expense {
-// 	amount: number;
-// 	currency: string;
-// 	category: string;
-// 	description: string;
-// }
+import type { Rates } from "../types/rates";
 
 type Props = {
 	onAddExpense: (expense: Expense) => void;
+	rates: Rates | null;
+	loading: boolean;
+	errorMessage: string;
 };
 
-
-
-const ExpenseForm: React.FC<Props> = ({ onAddExpense }) => {
+const ExpenseForm: React.FC<Props> = ({
+	onAddExpense,
+	rates,
+	loading,
+	errorMessage,
+}) => {
 	const numberButtons: number[] = [20, 25, 50, 75, 100, 150, 200, 250, 300];
 
 	const currencyOptions: string[] = ["L", "$", "€"];
@@ -35,8 +32,6 @@ const ExpenseForm: React.FC<Props> = ({ onAddExpense }) => {
 	const [category, setCategory] = React.useState<string>("Без категории");
 
 	const [description, setDescription] = React.useState<string>("");
-
-	// const [expenses, setExpenses] = React.useState<Expense[]>([]);
 
 	const [error, setError] = React.useState<string>("");
 
@@ -58,10 +53,9 @@ const ExpenseForm: React.FC<Props> = ({ onAddExpense }) => {
 			currency,
 			category,
 			description,
-			
+			date: new Date().toISOString().split("T")[0],
 		};
 		onAddExpense(expense);
-
 		setAmount("");
 		setCategory("Без категории");
 		setDescription("");
@@ -158,10 +152,21 @@ const ExpenseForm: React.FC<Props> = ({ onAddExpense }) => {
 								className="text-white p-2 rounded-xl bg-[rgb(21,26,41)] border border-gray-600"
 							/>
 						</label>
+						{loading && (
+							<p className="text-sm text-gray-500">Загрузка курсов...</p>
+						)}
 
-						<p className="text-sm text-gray-500">
-							Курс: 1 USD = 4.6 RON, 1 USD = 0.85 EUR (fallback от 02.06.2026).
-						</p>
+						{errorMessage && (
+							<p className="text-sm text-red-500">{errorMessage}</p>
+						)}
+
+						{rates && (
+							<p className="text-sm text-gray-500">
+								{rates
+									? `Курс: 1 USD = ${rates.RON} RON , 1 USD = ${rates.EUR} EUR (Актуальный курс на ${rates.data} UTC)`
+									: " Загрузка курсов..."}
+							</p>
+						)}
 					</div>
 				</section>
 			</div>

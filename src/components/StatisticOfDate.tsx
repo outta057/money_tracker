@@ -3,9 +3,13 @@ import type { Expense } from "../types/expense";
 
 type Props = {
 	expenses: Expense[];
+	filters: {
+		from: string;
+		to: string;
+	}
 };
 
-const StatisticOfDate: React.FC<Props> = ({ expenses }) => {
+const StatisticOfDate: React.FC<Props> = ({ expenses, filters }) => {
 
 const totals = expenses.reduce((acc, expense) => {
 	const { currency, amount } = expense;
@@ -23,11 +27,11 @@ const totals = expenses.reduce((acc, expense) => {
 				<div className="flex flex-col gap-4 text-white">
 
 					<p className="text-gray-500">
-						Всего записей: {expenses.length}
+						Всего записей: {expenses.length} 
 					</p>
 
 					<p>
-						Затраты с: 01.06.2026 по: 11.06.2026
+						Период дат: {filters.from || "-"} по {filters.to || "-"} 
 					</p>
 
 					<div className="flex flex-col gap-1 text-base">
