@@ -15,6 +15,9 @@ const ExpenseForm: React.FC<Props> = ({
 	loading,
 	errorMessage,
 }) => {
+
+
+	
 	const numberButtons: number[] = [20, 25, 50, 75, 100, 150, 200, 250, 300];
 
 	const currencyOptions: string[] = ["L", "$", "€"];
@@ -29,6 +32,17 @@ const ExpenseForm: React.FC<Props> = ({
 		setAmount(String(number));
 	};
 
+	const categoryOptions: string[] = [
+		"Без категории",
+		"Еда",
+		"Транспорт",
+		"Развлечение",
+		"Комунальные услуги",
+		"Здоровье",
+		"Образование",
+		"Покупки",
+		"Другое",
+	];
 	const [category, setCategory] = React.useState<string>("Без категории");
 
 	const [description, setDescription] = React.useState<string>("");
@@ -124,20 +138,16 @@ const ExpenseForm: React.FC<Props> = ({
 						<label className="flex flex-col gap-1 text-gray-500">
 							Категории
 							<select
-								aria-label="Категории расходов"
 								value={category}
 								onChange={e => setCategory(e.target.value)}
+								aria-label="Категории расходов"
 								className="text-white p-2 rounded-xl bg-[rgb(21,26,41)] border border-gray-600"
 							>
-								<option value="Без категории">Без категории</option>
-								<option value="food">Еда</option>
-								<option value="transport">Транспорт</option>
-								<option value="entertainment">Развлечения</option>
-								<option value="utilities">Коммунальные услуги</option>
-								<option value="health">Здоровье</option>
-								<option value="education">Образование</option>
-								<option value="shopping">Покупки</option>
-								<option value="other">Другое</option>
+								{categoryOptions.map(category => (
+									<option key={category} value={category}>
+										{category}
+									</option>
+								))}
 							</select>
 						</label>
 
