@@ -1,4 +1,5 @@
 import React from "react";
+import { API_URL } from "./api";
 import CalendarDate from "./components/CalendarDate";
 import ExitAcc from "./components/ExitAcc";
 import ExpenseForm from "./components/ExpenseForm";
@@ -7,10 +8,23 @@ import TransactionList from "./components/TransactionList";
 import type { Expense } from "./types/expense";
 import type { Rates } from "./types/rates";
 
-function App() {
+type AppProps = {
+	token: string;
+	onLogout: () => void;
+};
+
+function App({ token, onLogout }: AppProps) {
 	const [rates, setRates] = React.useState<Rates | null>(null);
 	const [loading, setLoading] = React.useState(true);
 	const [errorMessage, setError] = React.useState("");
+	const [expenseErrorMessage, setExpenseErrorMessage] = React.useState("");
+	const [viewMode, setViewMode] = React.useState<"all" | "period">("all");
+	const [expenses, setExpenses] = React.useState<Expense[]>([]);
+	const [filters, setFilters] = React.useState({
+		from: "",
+		to: "",
+		category: "all",
+	});
 
 	React.useEffect(() => {
 		const fetchRates = async () => {
@@ -18,7 +32,6 @@ function App() {
 				const response = await fetch(
 					"https://v6.exchangerate-api.com/v6/7697877099c4f61525c63d75/latest/USD",
 				);
-
 				const data = await response.json();
 
 				setRates({
@@ -26,8 +39,8 @@ function App() {
 					RON: data.conversion_rates.RON,
 					EUR: data.conversion_rates.EUR,
 				});
-			} catch (errorMessage) {
-				console.error(errorMessage);
+			} catch (error) {
+				console.error(error);
 				setError("Не удалось загрузить курсы");
 			} finally {
 				setLoading(false);
@@ -37,61 +50,74 @@ function App() {
 		fetchRates();
 	}, []);
 
-	const [viewMode, setViewMode] = React.useState<"all" | "period">("all");
-
-	const [expenses, setExpenses] = React.useState<Expense[]>([]);
-
 	React.useEffect(() => {
 		const fetchExpenses = async () => {
-			const res = await fetch("http://localhost:5000/expenses");
-			const data = await res.json();
-			setExpenses(data);
+			try {
+				const res = await fetch(API_URL + "/expenses", {
+					headers: {
+						Authorization: "Bearer " + token,
+					},
+				});
+
+				if (!res.ok) {
+					throw new Error("Failed to load expenses");
+				}
+
+				const data = (await res.json()) as Expense[];
+				setExpenses(data);
+				setExpenseErrorMessage("");
+			} catch {
+				setExpenseErrorMessage("Не удалось загрузить расходы");
+			}
 		};
 
 		fetchExpenses();
-	}, []);
+	}, [token]);
 
 	const addExpense = async (expense: Expense) => {
-		await fetch("http://localhost:5000/expenses", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(expense),
-		});
+		try {
+			const res = await fetch(API_URL + "/expenses", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: "Bearer " + token,
+				},
+				body: JSON.stringify(expense),
+			});
 
-		const res = await fetch("http://localhost:5000/expenses");
-		const data = await res.json();
-		setExpenses(data);
+			if (!res.ok) {
+				throw new Error("Failed to add expense");
+			}
+
+			const createdExpense = (await res.json()) as Expense;
+			setExpenses(prev => [createdExpense, ...prev]);
+			setExpenseErrorMessage("");
+		} catch {
+			setExpenseErrorMessage("Не удалось сохранить расход");
+		}
 	};
-	const [filters, setFilters] = React.useState({
-		from: "",
-		to: "",
-		category: "all",
-	});
 
 	const statsExpenses = expenses.filter(expense => {
-  const expenseTime = new Date(expense.date).getTime();
+		if (viewMode === "all") return true;
 
-  if (filters.category !== "all" && expense.category !== filters.category) {
-    return false;
-  }
+		const expenseTime = new Date(expense.date).getTime();
 
-  if (filters.from) {
-    const fromTime = new Date(filters.from).getTime();
-    if (expenseTime < fromTime) return false;
-  }
+		if (filters.category !== "all" && expense.category !== filters.category) {
+			return false;
+		}
 
-  if (filters.to) {
-    const toTime = new Date(filters.to).getTime();
-    if (expenseTime > toTime) return false;
-  }
+		if (filters.from) {
+			const fromTime = new Date(filters.from).getTime();
+			if (expenseTime < fromTime) return false;
+		}
 
-  return true;
-});
+		if (filters.to) {
+			const toTime = new Date(filters.to).getTime();
+			if (expenseTime > toTime) return false;
+		}
 
-
-
+		return true;
+	});
 
 	return (
 		<div className="bg-[rgb(4,9,17)] pl-6 pr-6 pt-10 pb-10 w-full text-white min-h-screen flex flex-col items-center gap-4">
@@ -102,6 +128,10 @@ function App() {
 				onAddExpense={addExpense}
 			/>
 
+			{expenseErrorMessage && (
+				<p className="w-full text-sm text-red-500">{expenseErrorMessage}</p>
+			)}
+
 			<CalendarDate
 				filters={filters}
 				setFilters={setFilters}
@@ -110,10 +140,8 @@ function App() {
 			/>
 
 			<StatisticOfDate expenses={statsExpenses} filters={filters} />
-
-			<ExitAcc />
-
-			<TransactionList expenses={expenses} />
+			<ExitAcc onLogout={onLogout} />
+			<TransactionList expenses={viewMode === "all" ? expenses : statsExpenses} />
 		</div>
 	);
 }

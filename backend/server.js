@@ -1,59 +1,44 @@
-import express from "express";
-import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+import express from "express";
+import mongoose from "mongoose";
+import authRoutes from "./routes/auth.js";
+import expenseRoutes from "./routes/expenses.js";
 
 dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 5000;
+const mongoUri =
+	process.env.MONGODB_URI || process.env.MONGO_URI || process.env.MONGO_URL;
 
-app.use(cors());
+app.use(
+	cors({
+		origin: process.env.FRONTEND_URL || "http://localhost:5173",
+	}),
+);
 app.use(express.json());
 
-// подключение к Mongo
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log("MongoDB подключена"))
-  .catch(err => console.log(err));
-
-
-// ====== MODEL ======
-const expenseSchema = new mongoose.Schema({
-  amount: Number,
-  currency: String,
-  category: String,
-  description: String,
-  date: String,
+app.get("/", (req, res) => {
+	res.json({ message: "Money tracker API is running" });
 });
 
-const Expense = mongoose.model("Expense", expenseSchema);
+app.use("/auth", authRoutes);
+app.use("/expenses", expenseRoutes);
 
+if (!mongoUri) {
+	console.error("MONGODB_URI is missing in backend/.env");
+	process.exit(1);
+}
 
-// ====== ROUTES ======
-
-// создать расход
-app.post("/expenses", async (req, res) => {
-  try {
-    const expense = await Expense.create(req.body);
-    res.json(expense);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// получить все расходы
-app.get("/expenses", async (req, res) => {
-  try {
-    const expenses = await Expense.find();
-    res.json(expenses);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-
-// запуск сервера
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Сервер запущен на порту ${PORT}`);
-});
+mongoose
+	.connect(mongoUri)
+	.then(() => {
+		app.listen(PORT, () => {
+			console.log("Server is running on http://localhost:" + PORT);
+		});
+	})
+	.catch(error => {
+		console.error("MongoDB connection error:", error);
+		process.exit(1);
+	});

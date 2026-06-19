@@ -84,24 +84,26 @@ const CalendarDate: React.FC<CalendarDateProps> = ({
 								className="text-white p-2 rounded-xl bg-[rgb(21,26,41)] border border-gray-600"
 							>
 								<option value="all">Все категории</option>
-								<option value="food">Еда</option>
-								<option value="transport">Транспорт</option>
-								<option value="entertainment">Развлечения</option>
-								<option value="utilities">Коммунальные услуги</option>
-								<option value="health">Здоровье</option>
-								<option value="education">Образование</option>
-								<option value="shopping">Покупки</option>
-								<option value="other">Другое</option>
+								<option value="Без категории">Без категории</option>
+								<option value="Еда">Еда</option>
+								<option value="Транспорт">Транспорт</option>
+								<option value="Развлечение">Развлечение</option>
+								<option value="Комунальные услуги">Комунальные услуги</option>
+								<option value="Здоровье">Здоровье</option>
+								<option value="Образование">Образование</option>
+								<option value="Покупки">Покупки</option>
+								<option value="Другое">Другое</option>
 							</select>
 						</label>
 						<button
-							onClick={() =>
+							onClick={() => {
+								setViewMode("all");
 								setFilters({
 									from: "",
 									to: "",
 									category: "all",
-								})
-							}
+								});
+							}}
 							className="
 						h-10 w-30  rounded-xl text-gray-500  border border-gray-600"
 						>
