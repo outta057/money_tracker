@@ -14,8 +14,12 @@ const mongoUri =
 
 app.use(
 	cors({
-		origin: process.env.FRONTEND_URL || "https://money-tracker-backend-kpa1.onrender.com",
-	}),
+		origin: [
+			"http://localhost:5173",
+			"https://money-tracker-outta-057.vercel.app"
+		],
+		credentials: true,
+	})
 );
 app.use(express.json());
 
@@ -35,7 +39,7 @@ mongoose
 	.connect(mongoUri)
 	.then(() => {
 		app.listen(PORT, () => {
-			console.log("Server is running on https://money-tracker-backend-kpa1.onrender.com" + PORT);
+			console.log("Server is running on port " + PORT);
 		});
 	})
 	.catch(error => {
